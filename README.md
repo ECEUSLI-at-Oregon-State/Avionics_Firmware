@@ -1,5 +1,5 @@
 # Avionics-Firmware
-This repository contains the firmware code and logs for OSU AIAA's avionics subsystem during the USLI 2019-2020 competition.
+This repository contains the firmware code and logs for the OSU AIAA USLI team's avionics system during the NASA USLI 2019-2020 competition.
 
 ## Subscale 1 - November 16, 2019
 - PCB from previous year's launch
