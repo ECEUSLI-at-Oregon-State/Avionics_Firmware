@@ -4,7 +4,6 @@
 
 #include <stdio.h>
 #include <string.h>
-//#include <SPI.h>
 
 String received = "";
 String temp = "";
