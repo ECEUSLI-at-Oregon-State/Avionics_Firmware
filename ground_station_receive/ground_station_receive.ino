@@ -5,6 +5,8 @@
 #include <stdio.h>
 #include <string.h>
 
+#define xBeeSerial Serial2
+
 String received = "";
 String temp = "";
 char *ptr = NULL;
@@ -15,8 +17,8 @@ void setup() {
   while (!Serial) {};
 
   // Initialize XBee UART
-  Serial2.begin(9600);
-  while (!Serial2) {};
+  xBeeSerial.begin(9600);
+  while (!xBeeSerial) {};
 
   Serial.println("Initialized");
 }
@@ -24,7 +26,7 @@ void setup() {
 void loop() {
   String fields[50];
 
-  if (Serial2.available()) {
+  if (xBeeSerial.available()) {
     receive_data();
     Serial.println(received);
     
@@ -39,7 +41,7 @@ void loop() {
     Serial.println(check_checksum);
     if (verify_checksum(check_checksum, fields)) {
       Serial.println("ACK: " + String(fields[0]) + "!");
-      Serial2.println("ACK: " + String(fields[0]) + "!");
+      xBeeSerial.println("ACK: " + String(fields[0]) + "!");
     }
 
     //log_data();
@@ -52,17 +54,15 @@ void loop() {
 void receive_data() {
   temp = "";
   while (1) {
-    temp = Serial2.read();
+    temp = xBeeSerial.read();
     if (temp == "!") {
       break;
     } else {
       received = received + temp;
     }
-    delay(2);
   }
-  while (Serial2.available()) {
-    temp = Serial2.read();
-    delay(2);
+  while (xBeeSerial.available()) {
+    temp = xBeeSerial.read();
   }
   temp = "";
 }
@@ -86,7 +86,7 @@ String reconstruct_msg(String fields[]) {
   String message = "";
 
   // Rebuild message string to calculate checksum with
-  for (i = 0; i < 5; i++) {
+  for (i = 0; i < 8; i++) {
     Serial.println(fields[i]);
     message += fields[i];
   }
@@ -102,8 +102,8 @@ bool verify_checksum(String msg, String fields[]) {
   }
   checksum %= 256;
   Serial.println("Calculated " + String(checksum));
-  Serial.println("Comparing with " + fields[5]);
-  if (checksum == fields[5].toInt()) {
+  Serial.println("Comparing with " + fields[8]);
+  if (checksum == fields[8].toInt()) {
     return true;
   }
   else {
