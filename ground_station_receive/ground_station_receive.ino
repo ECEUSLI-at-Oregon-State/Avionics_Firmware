@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#define xBeeSerial Serial2
+#define xBeeSerial Serial3
 
 String received = "";
 String temp = "";
