@@ -65,10 +65,10 @@ void setup() {
 
   delay(1);
 
-  //  while (!sd.begin(SdSpiConfig(SD_CS_PIN, DEDICATED_SPI, SD_SCK_MHZ(50)))) {
-  //    Serial.println("Initialization Failed");
-  //    delay(1000);
-  //  }
+    while (!sd.begin(SdSpiConfig(SD_CS_PIN, DEDICATED_SPI, SD_SCK_MHZ(50)))) {
+      Serial.println("Initialization Failed");
+      delay(1000);
+    }
 }
 
 void loop() {
@@ -85,13 +85,13 @@ void loop() {
   //  // Use http://www.onlineconversion.com/pressure.htm for other units
   //  float inHg = pascals / 3377;
   //
-//  float altm = baro.getAltitude();
-//  float altmImperial = altm * 3.28084;
+  float altm = baro.getAltitude();
+  float altmImperial = altm * 3.28084;
 
   //    message = "\0";
   //  message = "Alt: ";
   message = String(message + ",");
-  message = message + String("10");
+  message = message + String(altmImperial);
 
   bool newData = false;
   unsigned long chars;
@@ -106,46 +106,46 @@ void loop() {
     }
   }
 
-  int year;
-  uint8_t month, day, hour, minutes, second, hundredths;
+//  int year;
+//  uint8_t month, day, hour, minutes, second, hundredths;
   unsigned long age;
   float flat, flon;
 
   gps.f_get_position(&flat, &flon, &age);
   temp = get_datetime(gps, age);
   message = String(message + temp);
-  //  gps.crack_datetime(&year, &month, &day, &hour, &minutes, &second, &hundredths, &age);
-
-  //  message = String(message + ",Time: ");
-  //  message = String(message + ",");
-  //
-  //  temp = String(year);
-  //  temp = String(temp + "/");
-  //  message = String(message + temp);
-  //
-  //  temp = String(month);
-  //  temp = String(temp + "/");
-  //  message = String(message + temp);
-  //
-  //  temp = String(day);
-  //  temp = String(temp + " ");
-  //  message = String(message + temp);
-  //
-  //  temp = String(hour);
-  //  temp = String(temp + ":");
-  //  message = String(message + temp);
-  //
-  //  temp = String(minutes);
-  //  temp = String(temp + ":");
-  //  message = String(message + temp);
-  //
-  //  temp = String(second);
-  //  temp = String(temp + ".");
-  //  message = String(message + temp);
-  //
-  //  temp = String(hundredths);
-  //  message = String(message + temp);
-
+//  //  gps.crack_datetime(&year, &month, &day, &hour, &minutes, &second, &hundredths, &age);
+//
+//  //  message = String(message + ",Time: ");
+//  //  message = String(message + ",");
+//  //
+//  //  temp = String(year);
+//  //  temp = String(temp + "/");
+//  //  message = String(message + temp);
+//  //
+//  //  temp = String(month);
+//  //  temp = String(temp + "/");
+//  //  message = String(message + temp);
+//  //
+//  //  temp = String(day);
+//  //  temp = String(temp + " ");
+//  //  message = String(message + temp);
+//  //
+//  //  temp = String(hour);
+//  //  temp = String(temp + ":");
+//  //  message = String(message + temp);
+//  //
+//  //  temp = String(minutes);
+//  //  temp = String(temp + ":");
+//  //  message = String(message + temp);
+//  //
+//  //  temp = String(second);
+//  //  temp = String(temp + ".");
+//  //  message = String(message + temp);
+//  //
+//  //  temp = String(hundredths);
+//  //  message = String(message + temp);
+//
   //  message = String(message + ",Lat: ");
   message = String(message + ",");
   temp = String(flat == TinyGPS::GPS_INVALID_F_ANGLE ? 0.0 : flat, 6);//Latitude
@@ -178,8 +178,8 @@ void loop() {
   temp = String(calc_checksum(message));
   message = String(message + temp);
 
-  //  log_data();
   message = String(message + "!\n");
+  log_data();
 
   Serial.println(message);
   xBeeSerial.println(message);
@@ -187,7 +187,6 @@ void loop() {
   if (xBeeSerial.available()) {
     receive_data();
     Serial.println(received);
-    //log_data();
     received = "";
   }
 }
@@ -220,7 +219,7 @@ int ReadAxis(int axisPin) {
 }
 
 void log_data() {
-  dataFile = sd.open("data2.txt", FILE_WRITE);
+  dataFile = sd.open("AllBlockCheckoff.txt", FILE_WRITE);
   if (dataFile) {
     dataFile.println(message);
     dataFile.close();

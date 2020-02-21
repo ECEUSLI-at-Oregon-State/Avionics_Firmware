@@ -29,18 +29,18 @@ void loop() {
   if (xBeeSerial.available()) {
     receive_data();
     Serial.println(received);
-    
+
     tokenize(received, fields);
 
 //    // Print fields
 //    for (int n = 0; n < 6; n++) {
 //      Serial.println(fields[n]);
 //    }
-    
+
     String check_checksum = reconstruct_msg(fields);
-    Serial.println(check_checksum);
+//    Serial.println(check_checksum);
     if (verify_checksum(check_checksum, fields)) {
-      Serial.println("ACK: " + String(fields[0]) + "!");
+      Serial.println("ACK: " + String(fields[0]) + "!\n");
       xBeeSerial.println("ACK: " + String(fields[0]) + "!");
     }
 
@@ -60,6 +60,7 @@ void receive_data() {
     } else {
       received = received + temp;
     }
+    delay(2);
   }
   while (xBeeSerial.available()) {
     temp = xBeeSerial.read();
@@ -87,7 +88,7 @@ String reconstruct_msg(String fields[]) {
 
   // Rebuild message string to calculate checksum with
   for (i = 0; i < 8; i++) {
-    Serial.println(fields[i]);
+//    Serial.println(fields[i]);
     message += fields[i];
   }
   return message;
