@@ -3,10 +3,10 @@
 //*********************************
 
 #include <Adafruit_MPL3115A2.h>
-#include <TinyGPS.h>
+#include <TinyGPS++.h>
 #include "SdFat.h"
 SdFs sd;
-TinyGPS gps;
+TinyGPSPlus gps;
 
 #define gpsPort Serial1
 #define GPSECHO  true
@@ -65,10 +65,10 @@ void setup() {
 
   delay(1);
 
-    while (!sd.begin(SdSpiConfig(SD_CS_PIN, DEDICATED_SPI, SD_SCK_MHZ(50)))) {
-      Serial.println("Initialization Failed");
-      delay(1000);
-    }
+  while (!sd.begin(SdSpiConfig(SD_CS_PIN, DEDICATED_SPI, SD_SCK_MHZ(50)))) {
+    Serial.println("microSD Initialization Failed");
+    delay(1000);
+  }
 }
 
 void loop() {
@@ -79,10 +79,10 @@ void loop() {
 
   enumerate += 1;
   message = String(enumerate);
- 
+
   float altm = baro.getAltitude();
   float altmImperial = altm * 3.28084;
-  
+
   message = String(message + ",");
   message = message + String(altmImperial);
 
@@ -102,18 +102,21 @@ void loop() {
   unsigned long age;
   float flat, flon;
 
-  gps.f_get_position(&flat, &flon, &age);
-  temp = get_datetime(gps, age);
+  //  gps.f_get_position(&flat, &flon, &age);
+  //  temp = get_datetime(gps, age);
+  temp = get_datetime(gps);
   message = String(message + temp);
 
   // Latitude
   message = String(message + ",");
-  temp = String(flat == TinyGPS::GPS_INVALID_F_ANGLE ? 0.0 : flat, 6);
+  //  temp = String(flat == TinyGPS::GPS_INVALID_F_ANGLE ? 0.0 : flat, 6);
+  temp = String(gps.location.lat(), 6);
   message = String(message + temp);
 
   // Longitude
   message = String(message + ",");
-  temp = String(flon == TinyGPS::GPS_INVALID_F_ANGLE ? 0.0 : flon, 6);
+  //  temp = String(flon == TinyGPS::GPS_INVALID_F_ANGLE ? 0.0 : flon, 6);
+  temp = String(gps.location.lng(), 6);
   message = String(message + temp);
 
   readAccel();
@@ -179,7 +182,7 @@ int ReadAxis(int axisPin) {
 }
 
 void log_data() {
-  dataFile = sd.open("AllBlockCheckoff.txt", FILE_WRITE);
+  dataFile = sd.open("Fullscale2-3-7-20-atu.txt", FILE_WRITE);
   if (dataFile) {
     dataFile.println(message);
     dataFile.close();
@@ -201,7 +204,7 @@ void receive_data() {
   }
   while (xBeeSerial.available()) {
     temp = xBeeSerial.read();
-    //    delay(1);
+    delay(1);
   }
   temp = "";
 }
@@ -217,11 +220,34 @@ int calc_checksum(String msg) {
   return (checksum %= 256);
 }
 
-String get_datetime(TinyGPS gps, unsigned long age) {
+//String get_datetime(TinyGPS gps, unsigned long age) {
+//  String datetime;
+//  int year;
+//  uint8_t month, day, hour, minute, second, hundredth;
+//  gps.crack_datetime(&year, &month, &day, &hour, &minute, &second, &hundredth, &age);
+//  datetime += String(",");
+//  datetime += String(year);
+//  datetime += String("/") + String(month);
+//  datetime += String("/") + String(day);
+//  datetime += String(" ") + String(hour);
+//  datetime += String(":") + String(minute);
+//  datetime += String(":") + String(second);
+//  datetime += String(".") + String(hundredth);
+//  return datetime;
+//}
+
+String get_datetime(TinyGPSPlus gps) {
   String datetime;
-  int year;
+  uint16_t year;
   uint8_t month, day, hour, minute, second, hundredth;
-  gps.crack_datetime(&year, &month, &day, &hour, &minute, &second, &hundredth, &age);
+  //  gps.crack_datetime(&year, &month, &day, &hour, &minute, &second, &hundredth, &age);
+  year = gps.date.year();
+  month = gps.date.month();
+  day = gps.date.day();
+  hour = gps.time.hour();
+  minute = gps.time.minute();
+  second = gps.time.second();
+  hundredth = gps.time.centisecond();
   datetime += String(",");
   datetime += String(year);
   datetime += String("/") + String(month);
