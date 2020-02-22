@@ -21,7 +21,7 @@ Adafruit_MPL3115A2 baro = Adafruit_MPL3115A2();
 bool usingInterrupt = false;
 
 //Accelerometer
-const int xInput = A20;
+const int xInput = A7;
 const int yInput = A8;
 const int zInput = A9;
 //const int buttonPin = 2;
