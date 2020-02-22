@@ -201,7 +201,7 @@ void receive_data() {
   }
   while (xBeeSerial.available()) {
     temp = xBeeSerial.read();
-    //    delay(1);
+    delay(1);
   }
   temp = "";
 }
