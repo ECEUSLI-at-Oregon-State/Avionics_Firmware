@@ -25,7 +25,7 @@ def animate(i):
     oldrow = []
     newrow = []
 
-    logfile = open("Fullscale2-3-7-20-gui.csv", "a")                    # Open log file writer for appending
+    logfile = open("Fullscale2-3-7-20-gui.csv", "a")        # Open log file writer for appending
     # Decode and format string from Arduino
     line = ser.readline().decode('UTF-8', errors='ignore').strip('\n\r')
     if (len(line) > 0):

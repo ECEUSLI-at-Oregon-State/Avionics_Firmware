@@ -24,7 +24,6 @@ bool usingInterrupt = false;
 const int xInput = A7;
 const int yInput = A8;
 const int zInput = A9;
-//const int buttonPin = 2;
 
 // Raw Ranges:
 // initialize to mid-range and allow calibration to
@@ -60,7 +59,8 @@ void setup() {
 
   xBeeSerial.begin(9600);
   gpsPort.begin(9600);
-  // 10 Hz update rate
+
+  // GPS 10 Hz update rate
   gpsPort.println(PMTK_SET_NMEA_UPDATE_10HZ);
 
   delay(1);
@@ -73,14 +73,17 @@ void setup() {
 
 void loop() {
   if (! baro.begin()) {
-    Serial.println("Couldnt find sensor");
+    Serial.println("Couldn't find barometeric pressure sensor.");
     return;
   }
 
+  // Packet number
   enumerate += 1;
   message = String(enumerate);
 
   float altm = baro.getAltitude();
+
+  // Convert from meters to feet
   float altmImperial = altm * 3.28084;
 
   message = String(message + ",");
@@ -102,20 +105,17 @@ void loop() {
   unsigned long age;
   float flat, flon;
 
-  //  gps.f_get_position(&flat, &flon, &age);
-  //  temp = get_datetime(gps, age);
+  // Datetime
   temp = get_datetime(gps);
   message = String(message + temp);
 
   // Latitude
   message = String(message + ",");
-  //  temp = String(flat == TinyGPS::GPS_INVALID_F_ANGLE ? 0.0 : flat, 6);
   temp = String(gps.location.lat(), 6);
   message = String(message + temp);
 
   // Longitude
   message = String(message + ",");
-  //  temp = String(flon == TinyGPS::GPS_INVALID_F_ANGLE ? 0.0 : flon, 6);
   temp = String(gps.location.lng(), 6);
   message = String(message + temp);
 
@@ -141,12 +141,18 @@ void loop() {
   temp = String(calc_checksum(message));
   message = String(message + temp);
 
+  // ! packet deliieter
   message = String(message + "!\n");
+
   log_data();
 
+  // Print packet
   Serial.println(message);
+  
+  // Send packet
   xBeeSerial.println(message);
 
+  // Print ACK if received
   if (xBeeSerial.available()) {
     receive_data();
     Serial.println(received);
@@ -164,7 +170,7 @@ void readAccel() {
   yScaled = map(yRaw, yRawMin, yRawMax, -1000, 1000);
   zScaled = map(zRaw, zRawMin, zRawMax, -1000, 1000);
 
-  // re-scale to fractional Gs
+  // Re-scale to fractional Gs
   xAccel = xScaled / 1000.0;
   yAccel = yScaled / 1000.0;
   zAccel = zScaled / 1000.0;
@@ -182,17 +188,19 @@ int ReadAxis(int axisPin) {
 }
 
 void log_data() {
-  dataFile = sd.open("Fullscale2-3-7-20-atu.txt", FILE_WRITE);
+  dataFile = sd.open("fullscale_1_telemetry_unit_2-22-20.csv", FILE_WRITE);
   if (dataFile) {
     dataFile.println(message);
     dataFile.close();
   } else {
-    Serial.println("Couldn't Write to File.");
+    Serial.println("Couldn't write to file.");
   }
 }
 
 void receive_data() {
   temp = "";
+
+  // Read chars building received string until ! delimiter
   while (1) {
     temp = xBeeSerial.read();
     if (temp == "!") {
@@ -202,6 +210,8 @@ void receive_data() {
     }
     delay(1);
   }
+
+  // Flush buffer
   while (xBeeSerial.available()) {
     temp = xBeeSerial.read();
     delay(1);
@@ -209,38 +219,26 @@ void receive_data() {
   temp = "";
 }
 
+// The checksum calculation is the sum of all ASCII chars in a string
 int calc_checksum(String msg) {
   int checksum = 0;
+
   for (int i = 0; i < msg.length(); i++) {
     if (msg[i] != ',') {
       checksum += msg[i];
     }
   }
-  //  Serial.println(checksum %= 256);
+
   return (checksum %= 256);
 }
 
-//String get_datetime(TinyGPS gps, unsigned long age) {
-//  String datetime;
-//  int year;
-//  uint8_t month, day, hour, minute, second, hundredth;
-//  gps.crack_datetime(&year, &month, &day, &hour, &minute, &second, &hundredth, &age);
-//  datetime += String(",");
-//  datetime += String(year);
-//  datetime += String("/") + String(month);
-//  datetime += String("/") + String(day);
-//  datetime += String(" ") + String(hour);
-//  datetime += String(":") + String(minute);
-//  datetime += String(":") + String(second);
-//  datetime += String(".") + String(hundredth);
-//  return datetime;
-//}
 
+// Extract datetime fields and format the string
 String get_datetime(TinyGPSPlus gps) {
   String datetime;
   uint16_t year;
   uint8_t month, day, hour, minute, second, hundredth;
-  //  gps.crack_datetime(&year, &month, &day, &hour, &minute, &second, &hundredth, &age);
+
   year = gps.date.year();
   month = gps.date.month();
   day = gps.date.day();
@@ -248,6 +246,7 @@ String get_datetime(TinyGPSPlus gps) {
   minute = gps.time.minute();
   second = gps.time.second();
   hundredth = gps.time.centisecond();
+
   datetime += String(",");
   datetime += String(year);
   datetime += String("/") + String(month);
@@ -256,5 +255,6 @@ String get_datetime(TinyGPSPlus gps) {
   datetime += String(":") + String(minute);
   datetime += String(":") + String(second);
   datetime += String(".") + String(hundredth);
+
   return datetime;
 }

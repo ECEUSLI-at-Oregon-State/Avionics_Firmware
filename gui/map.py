@@ -7,8 +7,6 @@ import csv
 def display(lat,lon):
     mapbox_access_token = open("mapbox_token").read()
 
-
-
     fig = go.Figure(go.Scattermapbox(
             lat=lat,
             lon=lon,

@@ -118,7 +118,7 @@ String reconstruct_msg(String fields[]) {
 bool verify_checksum(String msg, String fields[]) {
   int checksum = 0;
 
-  // Perform checksum calculation
+  // Perform checksum calculation by summing ASCII values
   for (int i = 0; i < msg.length(); i++) {
     if (msg[i] != ',') {
       checksum += msg[i];
