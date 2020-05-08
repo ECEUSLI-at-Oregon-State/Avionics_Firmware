@@ -10,7 +10,6 @@ from map import display
 
 root = tk.Tk()
 
-
 datetime = []
 altitude = []
 lat = []
@@ -18,7 +17,6 @@ lon = []
 fig = plt.figure(figsize=(5,5))
 ax = fig.add_subplot(111)
 graph = FigureCanvasTkAgg(fig,root)
-# graph.get_tk_widget().pack()
 ax.plot(datetime,altitude,'b')
 plt.title('Date Time vs Altitude')
 plt.xlabel('Date Time')
@@ -26,17 +24,12 @@ plt.ylabel('Altitude')
 plt.legend(['Altitude'])
 plt.xticks(rotation=45, ha='right')
 
-
-
-
 xText = tk.Label(root, text=1, font=('', 20))
 xText.pack()
 xText['text'] = "X-Acceleration"
 
-
 xLabel = tk.Label(root, text=1, font=('', 20))
 xLabel.pack()
-
 
 yText = tk.Label(root, text=1, font=('', 20))
 yText.pack()
@@ -53,32 +46,34 @@ zLabel = tk.Label(root, text=1, font=('', 20))
 zLabel.pack()
 
 
-
+# Gets X-axis acceleration
 def x(num):
-    with open('test.csv') as csv_file:
+    with open('fullscale_1_gui_log_2-22-20.csv') as csv_file:
         csv_reader = csv.reader(csv_file)
         rows = list(csv_reader)
         data = rows[num]
         print("X-Acceleration: ", data[5])
         return data[5]
 
+
+# Gets Y-axis acceleration
 def y(num):
-    with open('test.csv') as csv_file:
+    with open('fullscale_1_gui_log_2-22-20.csv') as csv_file:
         csv_reader = csv.reader(csv_file)
         rows = list(csv_reader)
-
         data = rows[num]
         print("Y-Acceleration: ", data[6])
         return data[6]
 
+
+# Gets Z-axis acceleration
 def z(num):
-    with open('test.csv') as csv_file:
+    with open('fullscale_1_gui_log_2-22-20.csv') as csv_file:
         csv_reader = csv.reader(csv_file)
         rows = list(csv_reader)
         data = rows[num]
         print("Z-Acceleration: ", data[7])
         return data[7]
-
 
 
 def printSomething(count = 0):
@@ -96,11 +91,8 @@ def printSomething(count = 0):
     root.after(500, printSomething, count+1)
 
 
-
-
-
 def getInfo(num):
-    with open('test.csv') as csv_file:
+    with open('fullscale_1_gui_log_2-22-20.csv') as csv_file:
         csv_reader = csv.reader(csv_file)
         rows = list(csv_reader)
         data = rows[num]
@@ -123,14 +115,10 @@ def test(num):
         lon.append(info[4])
         ax.plot(datetime,altitude,'b')
 
-
     fig.canvas.draw()
     fig.canvas.flush_events()
 
     graph.get_tk_widget().pack()
-    #root.after(600, test,num+1)
-
-
 
 
 printSomething()

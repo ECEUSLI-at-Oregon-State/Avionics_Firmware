@@ -25,8 +25,9 @@ void setup() {
   xBeeSerial.begin(9600);
   while (!xBeeSerial) {};
 
+  // Initialize microSD card
   while (!sd.begin(SdSpiConfig(SD_CS_PIN, DEDICATED_SPI, SD_SCK_MHZ(50)))) {
-    Serial.println("microSD Initialization Failed");
+    Serial.println("microSD initialization failed");
     delay(1000);
   }
 
@@ -43,19 +44,12 @@ void loop() {
 
     tokenize(received, fields);
 
-    //    // Print fields
-    //    for (int n = 0; n < 6; n++) {
-    //      Serial.println(fields[n]);
-    //    }
-
     String check_checksum = reconstruct_msg(fields);
-    //    Serial.println(check_checksum);
+
+    // If checksum matches, send ACK
     if (verify_checksum(check_checksum, fields)) {
-//      Serial.println("ACK: " + String(fields[0]) + "!\n");
       xBeeSerial.println("ACK: " + String(fields[0]) + "!");
     }
-
-    //log_data();
 
     received = "";
   }
@@ -63,17 +57,21 @@ void loop() {
 }
 
 void log_data() {
-  dataFile = sd.open("Fullscale2-3-8-20-gs.txt", FILE_WRITE);
+  // Open file for writing
+  dataFile = sd.open("fullscale_1_ground_station_log_2-22-20.csv", FILE_WRITE);
+
   if (dataFile) {
     dataFile.println(received);
     dataFile.close();
   } else {
-    Serial.println("Couldn't Write to File.");
+    Serial.println("Couldn't write to file.");
   }
 }
 
 void receive_data() {
   temp = "";
+
+  // Read chars building received string until ! delimiter
   while (1) {
     temp = xBeeSerial.read();
     if (temp == "!") {
@@ -83,6 +81,8 @@ void receive_data() {
     }
     delay(2);
   }
+
+  // Flush buffer
   while (xBeeSerial.available()) {
     temp = xBeeSerial.read();
   }
@@ -95,8 +95,8 @@ void tokenize(String received, String fields[]) {
   received.toCharArray(mssg, received.length() + 1);
   ptr = strtok(mssg, ",");
 
+  // Store tokens into fields array
   while (ptr != NULL) {
-    //    Serial.println(ptr);
     fields[i] = String(ptr);
     i++;
     ptr = strtok(NULL, "!,");
@@ -109,22 +109,25 @@ String reconstruct_msg(String fields[]) {
 
   // Rebuild message string to calculate checksum with
   for (i = 0; i < 8; i++) {
-    //    Serial.println(fields[i]);
     message += fields[i];
   }
+
   return message;
 }
 
 bool verify_checksum(String msg, String fields[]) {
   int checksum = 0;
+
+  // Perform checksum calculation
   for (int i = 0; i < msg.length(); i++) {
     if (msg[i] != ',') {
       checksum += msg[i];
     }
   }
+
   checksum %= 256;
-//  Serial.println("Calculated " + String(checksum));
-//  Serial.println("Comparing with " + fields[8]);
+
+  // Check calculation against checksum
   if (checksum == fields[8].toInt()) {
     return true;
   }
